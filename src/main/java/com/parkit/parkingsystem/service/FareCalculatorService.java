@@ -1,5 +1,7 @@
 package com.parkit.parkingsystem.service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import com.parkit.parkingsystem.constants.Fare;
@@ -15,6 +17,10 @@ public class FareCalculatorService {
         long inTime = ticket.getInTime().getTime();
         long outTime = ticket.getOutTime().getTime();
         double duration = ((double) (outTime - inTime) / 3600000);
+
+        LocalDateTime timeIn = LocalDateTime.now();
+        LocalDateTime timeOut = LocalDateTime.now().plusMinutes(5);
+        long duration2 = Duration.between(timeIn, timeOut).toMinutes();
 
         switch (ticket.getParkingSpot().getParkingType()) {
             case CAR: {
