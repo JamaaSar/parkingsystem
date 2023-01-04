@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TicketDAO {
 
@@ -68,7 +70,30 @@ public class TicketDAO {
             return ticket;
         }
     }
+    public Boolean isReccurent(String vehicleRegNumber) {
+        Connection con = null;
 
+        Boolean vehiculeRecurent = false;
+
+        try {
+            con = dataBaseConfig.getConnection();
+            PreparedStatement ps = con.prepareStatement(DBConstants.GET_RECURRENT
+            );
+            //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
+            ps.setString(1,vehicleRegNumber);
+            ResultSet rs = ps.executeQuery();
+           if (rs.isBeforeFirst() && rs.getRow() != 0){
+               vehiculeRecurent = true;
+           }
+            dataBaseConfig.closeResultSet(rs);
+            dataBaseConfig.closePreparedStatement(ps);
+        }catch (Exception ex){
+            logger.error("Error fetching next available slot",ex);
+        }finally {
+            dataBaseConfig.closeConnection(con);
+            return vehiculeRecurent;
+        }
+    }
     public boolean updateTicket(Ticket ticket) {
         Connection con = null;
         try {
