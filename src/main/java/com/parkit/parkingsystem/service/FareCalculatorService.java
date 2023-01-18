@@ -7,7 +7,7 @@ import com.parkit.parkingsystem.model.Ticket;
 public class FareCalculatorService {
     private  TicketDAO ticketDAO;
 
-    public void calculateFare(Ticket ticket){
+    public void calculateFare(Ticket ticket, boolean reccurent){
         if( (ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime())) ){
             throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
         }
@@ -15,14 +15,13 @@ public class FareCalculatorService {
         long inTime = ticket.getInTime().getTime();
         long outTime = ticket.getOutTime().getTime();
         double duration = freePass(outTime ,inTime);
-
         switch (ticket.getParkingSpot().getParkingType()){
             case CAR: {
-                ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
+                ticket.setPrice(calculPrice(reccurent, duration , Fare.CAR_RATE_PER_HOUR));
                 break;
             }
             case BIKE: {
-                ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
+                ticket.setPrice(calculPrice(reccurent,duration ,Fare.BIKE_RATE_PER_HOUR));
                 break;
             }
             default: throw new IllegalArgumentException("Unkown Parking Type");
@@ -35,6 +34,13 @@ public class FareCalculatorService {
        }else{
            return duration;
        }
+    }
+    public double calculPrice(boolean isReccurent, double duration, double type){
+        if(isReccurent) {
+            return duration * 0.95 * type;
+        }else{
+            return duration * type;
+        }
     }
 
 }

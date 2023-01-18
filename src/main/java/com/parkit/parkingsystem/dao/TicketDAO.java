@@ -73,26 +73,28 @@ public class TicketDAO {
     public Boolean isReccurent(String vehicleRegNumber) {
         Connection con = null;
 
-        Boolean vehiculeRecurent = false;
+        Boolean vehiculeIsRecurent = false;
 
         try {
             con = dataBaseConfig.getConnection();
             PreparedStatement ps = con.prepareStatement(DBConstants.GET_RECURRENT
             );
-            //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
+
             ps.setString(1,vehicleRegNumber);
             ResultSet rs = ps.executeQuery();
-           if (rs.isBeforeFirst() && rs.getRow() != 0){
-               vehiculeRecurent = true;
-           }
+
+            if(rs.next()){
+                vehiculeIsRecurent = true;
+            }
             dataBaseConfig.closeResultSet(rs);
             dataBaseConfig.closePreparedStatement(ps);
         }catch (Exception ex){
-            logger.error("Error fetching next available slot",ex);
+            logger.error("no",ex);
         }finally {
             dataBaseConfig.closeConnection(con);
-            return vehiculeRecurent;
         }
+        return vehiculeIsRecurent;
+
     }
     public boolean updateTicket(Ticket ticket) {
         Connection con = null;
