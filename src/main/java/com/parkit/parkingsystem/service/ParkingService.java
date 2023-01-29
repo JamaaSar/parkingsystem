@@ -15,6 +15,7 @@ import java.util.List;
 public class ParkingService {
 
     private static final Logger logger = LogManager.getLogger("ParkingService");
+    private static final Double DISCOUNT = 0.95;
 
     private static FareCalculatorService fareCalculatorService = new FareCalculatorService();
 
@@ -34,6 +35,7 @@ public class ParkingService {
             if(parkingSpot !=null && parkingSpot.getId() > 0){
                 String vehicleRegNumber = getVehichleRegNumber();
                 Boolean reccurent = ticketDAO.isReccurent(vehicleRegNumber);
+                System.out.println(reccurent);
                 parkingSpot.setAvailable(false);
                 parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
                 Date inTime = new Date();
@@ -105,11 +107,14 @@ public class ParkingService {
         try{
             String vehicleRegNumber = getVehichleRegNumber();
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
-
-
             Date outTime = new Date();
             ticket.setOutTime(outTime);
-            fareCalculatorService.calculateFare(ticket, ticketDAO.isReccurent(vehicleRegNumber));
+            if (ticketDAO.isReccurent(vehicleRegNumber)) {
+                fareCalculatorService.calculateFareDiscount(ticket, DISCOUNT);
+                System.out.println("welcome again regular customer!");
+            } else {
+                fareCalculatorService.calculateFare(ticket);
+            }
             if(ticketDAO.updateTicket(ticket)) {
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
