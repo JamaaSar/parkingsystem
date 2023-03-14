@@ -1,0 +1,7 @@
+2023-02-17 13:05:58.770 [main] INFO  App - Initializing Parking System
+2023-02-17 13:05:58.788 [main] ERROR InteractiveShell - App initialized!!!
+2023-02-17 13:05:58.789 [main] INFO  InteractiveShell - Welcome to Parking System!
+2023-02-17 13:05:58.834 [main] INFO  InteractiveShell - Please select an option. Simply enter the number to choose an action
+2023-02-17 13:05:58.834 [main] INFO  InteractiveShell - 1 New Vehicle Entering - Allocate Parking Space
+2023-02-17 13:05:58.835 [main] INFO  InteractiveShell - 2 Vehicle Exiting - Generate Ticket Price
+2023-02-17 13:05:58.835 [main] INFO  InteractiveShell - 3 Shutdown System

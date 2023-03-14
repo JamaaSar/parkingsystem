@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ParkingDataBaseIT {
+ class ParkingDataBaseIT {
 
     private static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
     private static ParkingSpotDAO parkingSpotDAO;
@@ -53,13 +53,11 @@ public class ParkingDataBaseIT {
     }
 
     @Test
-    public void testParkingACar() {
+     void testParkingACar() {
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
-        //TODO: check that a ticket is actualy saved in DB and Parking table is updated with availability
         Ticket currentTicket = ticketDAO.getTicket("ABCDEF");
         ParkingSpot parkingSpot = currentTicket.getParkingSpot();
-
         assertNotNull(currentTicket);
         assertFalse(parkingSpot.isAvailable());
 
@@ -67,24 +65,16 @@ public class ParkingDataBaseIT {
     }
 
     @Test
-    public void testParkingLotExit()  {
+     void testParkingLotExit()  {
 
 
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
         ParkingService parkingServiceOut = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-
         parkingServiceOut.processExitingVehicle();
-        Ticket currentTicket = ticketDAO.getTicket("ABCDEF");
-        Ticket updatedTicket = ticketDAO.getTicket("ABCDEF");
-        System.out.println(currentTicket.getOutTime());
-        System.out.println(updatedTicket.getOutTime());
-
-
-
-        //TODO: check that the fare generated and out time are populated correctly in the database
+        Ticket updatedTicket = ticketDAO.getTicketById("ABCDEF");
         assertNotNull(updatedTicket.getOutTime());
-        //assertNotEquals(0, updatedTicket.getPrice());
+        assertNotNull( updatedTicket.getPrice());
     }
 
 }

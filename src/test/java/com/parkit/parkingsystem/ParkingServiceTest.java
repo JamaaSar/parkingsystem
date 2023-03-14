@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ParkingServiceTest {
+ class ParkingServiceTest {
 
     private static ParkingService parkingService;
 
@@ -46,10 +46,12 @@ public class ParkingServiceTest {
 
         parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         logCaptor = LogCaptor.forName("ParkingService");
+        logCaptor.setLogLevelToInfo();
+
     }
 
     @Test
-    public void processIncomingVehicleTest()  {
+     void processIncomingVehicleTest()  {
         //GIVEN
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
         when(inputReaderUtil.readSelection()).thenReturn(1);
@@ -59,9 +61,23 @@ public class ParkingServiceTest {
         //THEN
         verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
     }
+    @Test
+     void processIncomingVehicleReccurentTest() throws Exception {
+        //GIVEN
+        when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+        when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
+        when(inputReaderUtil.readSelection()).thenReturn(1);
+        when(ticketDAO.isReccurent("ABCDEF")).thenReturn(true);
+        when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);
+
+        //WHEN
+        parkingService.processIncomingVehicle();
+        //THEN
+        verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
+    }
 
     @Test
-    public void processIncomingVehicleExceptionTest()  {
+     void processIncomingVehicleExceptionSlotNullTest()  {
         //GIVEN
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(0);
@@ -71,10 +87,21 @@ public class ParkingServiceTest {
         assertTrue(logCaptor.getErrorLogs().contains(("Error fetching next available parking slot")));
     }
 
-
+    @Test
+    void processIncomingVehicleExceptionSlotExceptionTest()  {
+        //GIVEN
+        when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+        when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
+        when(inputReaderUtil.readSelection()).thenReturn(1);
+        when(ticketDAO.isReccurent("ABCDEF")).thenThrow(IllegalArgumentException.class);
+        //WHEN
+        parkingService.processIncomingVehicle();
+        //THEN
+        assertTrue(logCaptor.getErrorLogs().contains(("Unable to process incoming vehicle")));
+    }
 
     @Test
-    public void processExitingVehicleTest() throws Exception {
+     void processExitingVehicleTest() throws Exception {
         //GIVEN
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
@@ -88,10 +115,11 @@ public class ParkingServiceTest {
         //WHEN
         parkingService.processExitingVehicle();
         //THEN
+        verify(ticketDAO, Mockito.times(1)).updateTicket(any(Ticket.class));
         verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
     }
     @Test
-    public void processExitingReccurentVehicleTest() throws Exception {
+     void processExitingReccurentVehicleTest() throws Exception {
         //GIVEN
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
@@ -110,7 +138,7 @@ public class ParkingServiceTest {
         verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
     }
     @Test
-    public void processExitingVehicleExceptionTest() throws Exception {
+     void processExitingVehicleExceptionTest() throws Exception {
         //GIVEN
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
@@ -126,7 +154,7 @@ public class ParkingServiceTest {
         assertTrue(logCaptor.getErrorLogs().contains(("Unable to process exiting vehicle")));
     }
     @Test
-    public void processExitingVehicleConsoleTest() throws Exception {
+    void processExitingVehicleExceptionUpdateTest() throws Exception {
         //GIVEN
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
@@ -135,11 +163,16 @@ public class ParkingServiceTest {
         ticket.setParkingSpot(parkingSpot);
         ticket.setVehicleRegNumber("ABCDEF");
         when(ticketDAO.getTicket(anyString())).thenReturn(ticket);
+        when(ticketDAO.updateTicket(ticket)).thenReturn(Boolean.FALSE);
+
         //WHEN
         parkingService.processExitingVehicle();
         //THEN
-     //   assertTrue(consoleCaptor.getStandardOutput().contains("Unable to update ticket information. Error occurred"));
+
+        assertTrue(logCaptor.getErrorLogs().contains(("Unable to update ticket information. Error occurred")));
     }
+
+
 
     @Test
     void getNextParkingNumberCarIfAvailableShouldReturn1() {
@@ -158,14 +191,13 @@ public class ParkingServiceTest {
         when(inputReaderUtil.readSelection()).thenReturn(2);
         when(parkingSpotDAO.getNextAvailableSlot(ParkingType.BIKE)).thenReturn(2);
         //WHEN = > j'execute mon test
-
         ParkingSpot result = parkingService.getNextParkingNumberIfAvailable();
         //THEN => je vérifie
         assertEquals(2,result.getId());
     }
 
     @Test
-    public void getNextParkingNumberBikeIfAvailableExceptionTest() throws Exception {
+     void getNextParkingNumberBikeIfAvailableExceptionTest() throws Exception {
         //GIVEN
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(0);
@@ -176,7 +208,7 @@ public class ParkingServiceTest {
 
     }
     @Test
-    public void getNextParkingNumberBikeIfAvailableIllegalArgumentExceptionTest() throws Exception {
+     void getNextParkingNumberBikeIfAvailableIllegalArgumentExceptionTest() throws Exception {
         //GIVEN
         when(inputReaderUtil.readSelection()).thenReturn(0);
         //WHEN
